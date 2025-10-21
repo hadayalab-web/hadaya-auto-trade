@@ -1,6 +1,7 @@
 # 環境変数
 .env
 .env.*
+!.env.sample
 
 # API キー
 *.key
