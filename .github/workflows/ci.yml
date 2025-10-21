@@ -9,58 +9,53 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           path: .
 
-      - name: Setup Doppler CLI & inject Demo secrets
-        if: github.ref == 'refs/heads/demo'
-        uses: dopplerhq/cli-action@v2
-        with:
-          token: ${{ secrets.DOPPLER_TOKEN_DEMO }}
-          project: hadaya-auto-trade
-          config: Demo
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
 
       - name: Run tests on Demo
         if: github.ref == 'refs/heads/demo'
-        run: npm test
-
-      - name: Setup Doppler CLI & inject Production secrets
-        if: github.ref == 'refs/heads/main'
-        uses: dopplerhq/cli-action@v2
-        with:
-          token: ${{ secrets.DOPPLER_TOKEN_PRD }}
-          project: hadaya-auto-trade
-          config: Production
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_DEMO }}
+        run: doppler run \
+          --project hadaya-auto-trade \
+          --config Demo -- \
+          npm test
 
       - name: Run tests on Production
         if: github.ref == 'refs/heads/main'
-        run: npm test
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_PRD }}
+        run: doppler run \
+          --project hadaya-auto-trade \
+          --config Production -- \
+          npm test
 
   deploy:
     needs: build-and-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           path: .
 
-      - name: Setup Doppler CLI & inject Production secrets
-        uses: dopplerhq/cli-action@v2
-        with:
-          token: ${{ secrets.DOPPLER_TOKEN_PRD }}
-          project: hadaya-auto-trade
-          config: Production
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
 
       - name: Deploy to SimAI
-        run: |
-          simai deploy demo-trading-v1 \
-            --env SOSOVALUE_KEY,NANSENAI_KEY,SANTIMENT_KEY,MESSARI_KEY
         env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_PRD }}
           SIMAI_COPILOT_KEY: ${{ secrets.SIMAI_COPILOT_KEY }}
+        run: |
+          doppler run \
+            --project hadaya-auto-trade \
+            --config Production -- \
+            simai deploy demo-trading-v1 \
+              --env SOSOVALUE_KEY,NANSENAI_KEY,SANTIMENT_KEY,MESSARI_KEY
