@@ -17,6 +17,11 @@ jobs:
       - name: Install Doppler CLI
         uses: dopplerhq/cli-action@v3
 
+      # ここから追加
+      - name: Install dependencies
+        run: npm ci
+      # ここまで追加
+
       - name: Run tests on Demo
         if: github.ref == 'refs/heads/demo'
         env:
