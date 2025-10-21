@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          path: .
 
       - name: Setup Doppler CLI & inject Demo secrets
         if: github.ref == 'refs/heads/demo'
@@ -46,6 +48,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          path: .
 
       - name: Setup Doppler CLI & inject Production secrets
         uses: dopplerhq/cli-action@v2
