@@ -1,0 +1,63 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - demo
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Doppler CLI
+        run: curl -Ls https://cli.doppler.com/install.sh | sh
+
+      - name: Run tests on Demo
+        if: github.ref == 'refs/heads/demo'
+        run: |
+          doppler run \
+            --token ${{ secrets.DOPPLER_TOKEN_DEMO }} \
+            --project hadaya-auto-trade \
+            --config Demo -- \
+            npm test
+
+      - name: Run tests on Production
+        if: github.ref == 'refs/heads/main'
+        run: |
+          doppler run \
+            --token ${{ secrets.DOPPLER_TOKEN_PRD }} \
+            --project hadaya-auto-trade \
+            --config Production -- \
+            npm test
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Doppler CLI
+        run: curl -Ls https://cli.doppler.com/install.sh | sh
+
+      - name: Fetch Production secrets
+        run: |
+          doppler run \
+            --token ${{ secrets.DOPPLER_TOKEN_PRD }} \
+            --project hadaya-auto-trade \
+            --config Production -- \
+            echo "Secrets loaded"
+
+      - name: Deploy to SimAI
+        run: |
+          simai deploy demo-trading-v1 \
+            --env SOSOVALUE_KEY,NANSENAI_KEY,SANTIMENT_KEY,MESSARI_KEY
+        env:
+          SIMAI_COPILOT_KEY: ${{ secrets.SIMAI_COPILOT_KEY }}
