@@ -14,26 +14,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Doppler CLI
-        run: curl -Ls https://cli.doppler.com/install.sh | sh
+      - name: Setup Doppler CLI & inject Demo secrets
+        if: github.ref == 'refs/heads/demo'
+        uses: dopplerhq/action@v3
+        with:
+          token: ${{ secrets.DOPPLER_TOKEN_DEMO }}
+          project: hadaya-auto-trade
+          config: Demo
 
       - name: Run tests on Demo
         if: github.ref == 'refs/heads/demo'
-        run: |
-          doppler run \
-            --token ${{ secrets.DOPPLER_TOKEN_DEMO }} \
-            --project hadaya-auto-trade \
-            --config Demo -- \
-            npm test
+        run: npm test
+
+      - name: Setup Doppler CLI & inject Production secrets
+        if: github.ref == 'refs/heads/main'
+        uses: dopplerhq/action@v3
+        with:
+          token: ${{ secrets.DOPPLER_TOKEN_PRD }}
+          project: hadaya-auto-trade
+          config: Production
 
       - name: Run tests on Production
         if: github.ref == 'refs/heads/main'
-        run: |
-          doppler run \
-            --token ${{ secrets.DOPPLER_TOKEN_PRD }} \
-            --project hadaya-auto-trade \
-            --config Production -- \
-            npm test
+        run: npm test
 
   deploy:
     needs: build-and-test
@@ -44,16 +47,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Doppler CLI
-        run: curl -Ls https://cli.doppler.com/install.sh | sh
-
-      - name: Fetch Production secrets
-        run: |
-          doppler run \
-            --token ${{ secrets.DOPPLER_TOKEN_PRD }} \
-            --project hadaya-auto-trade \
-            --config Production -- \
-            echo "Secrets loaded"
+      - name: Setup Doppler CLI & inject Production secrets
+        uses: dopplerhq/action@v3
+        with:
+          token: ${{ secrets.DOPPLER_TOKEN_PRD }}
+          project: hadaya-auto-trade
+          config: Production
 
       - name: Deploy to SimAI
         run: |
