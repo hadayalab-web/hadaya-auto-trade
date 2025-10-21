@@ -1,3 +1,4 @@
+# yaml-language-server: $schema-disable
 name: CI/CD Pipeline
 
 on:
@@ -54,4 +55,4 @@ jobs:
         run: |
           doppler run --project hadaya-auto-trade --config prod -- \
             simai deploy demo-trading-v1 \
-              --env SOSOVALUE_KEY,NANSENAI_KEY,SANTIMENT_KEY,MESSARI_KEY
+              --env SOSOVALUE_KEY,NANSENAIAI_KEY,SANTIMENT_KEY,MESSARI_KEY
