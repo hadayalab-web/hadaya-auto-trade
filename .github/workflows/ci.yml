@@ -50,11 +50,14 @@ jobs:
       - name: Install Doppler CLI
         uses: dopplerhq/cli-action@v3
 
+      - name: Install SimAI CLI
+        run: npm install -g @simai/cli
+
       - name: Deploy to SimAI
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_PRD }}
           SIMAI_COPILOT_KEY: ${{ secrets.SIMAI_COPILOT_KEY }}
         run: |
           doppler run --project hadaya-auto-trade --config prod -- \
-            simai deploy demo-trading-v1 \
+            simai deploy hadaya-auto-trade-v1 \
               --env SOSOVALUE_KEY,NANSENAI_KEY,SANTIMENT_KEY,MESSARI_KEY
